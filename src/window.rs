@@ -114,6 +114,7 @@ pub struct WindowAttributes {
     pub transparent: bool,
     pub blur: bool,
     pub decorations: bool,
+    pub thickframe: bool,
     pub window_icon: Option<Icon>,
     pub preferred_theme: Option<Theme>,
     pub resize_increments: Option<Size>,
@@ -146,6 +147,7 @@ impl Default for WindowAttributes {
             transparent: false,
             blur: false,
             decorations: true,
+            thickframe: false,
             window_level: Default::default(),
             window_icon: None,
             preferred_theme: None,
@@ -355,6 +357,19 @@ impl WindowAttributes {
     #[inline]
     pub fn with_decorations(mut self, decorations: bool) -> Self {
         self.decorations = decorations;
+        self
+    }
+
+    /// Sets whether the window should have a thickframe.
+    /// 
+    /// Decorations must be set to false else nothing will happen.
+    ///
+    /// The default is `false`.
+    ///
+    /// See [`Window::set_thickframe`] for details.
+    #[inline]
+    pub fn with_thickframe(mut self, thickframe: bool) -> Self {
+        self.thickframe = thickframe;
         self
     }
 
@@ -1175,6 +1190,35 @@ impl Window {
     pub fn is_decorated(&self) -> bool {
         let _span = tracing::debug_span!("winit::Window::is_decorated",).entered();
         self.window.maybe_wait_on_main(|w| w.is_decorated())
+    }
+
+    /// Turn window thickframe on or off.
+    ///
+    /// Enable/disable window thickframe provided by the server or Winit.
+    /// By default this is enabled. Note that fullscreen windows and windows on
+    /// mobile and web platforms naturally do not have thickframe.
+    ///
+    /// ## Platform-specific
+    ///
+    /// - **iOS / Android / Web:** No effect.
+    #[inline]
+    pub fn set_thickframe(&self, thickframe: bool) {
+        let _span = tracing::debug_span!("winit::Window::set_thickframe", thickframe).entered();
+        self.window.maybe_queue_on_main(move |w| w.set_thickframe(thickframe))
+    }
+
+    /// Gets the window's current thickframe state.
+    ///
+    /// Returns `true` when windows are decorated with thickframe(server-side or by Winit).
+    /// Also returns `true` when no thickframe are required (mobile, web).
+    ///
+    /// ## Platform-specific
+    ///
+    /// - **iOS / Android / Web:** Always returns `true`.
+    #[inline]
+    pub fn is_thickframe(&self) -> bool {
+        let _span = tracing::debug_span!("winit::Window::is_thickframe",).entered();
+        self.window.maybe_wait_on_main(|w| w.is_thickframe())
     }
 
     /// Change the window level.

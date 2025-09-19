@@ -14,7 +14,7 @@ use windows_sys::Win32::UI::WindowsAndMessaging::{
     HWND_TOPMOST, MF_BYCOMMAND, MF_DISABLED, MF_ENABLED, SC_CLOSE, SWP_ASYNCWINDOWPOS,
     SWP_FRAMECHANGED, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOREPOSITION, SWP_NOSIZE, SWP_NOZORDER,
     SW_HIDE, SW_MAXIMIZE, SW_MINIMIZE, SW_RESTORE, SW_SHOW, SW_SHOWNOACTIVATE, WINDOWPLACEMENT,
-    WINDOW_EX_STYLE, WINDOW_STYLE, WS_BORDER, WS_CAPTION, WS_CHILD, WS_CLIPCHILDREN,
+    WINDOW_EX_STYLE, WINDOW_STYLE, WS_BORDER, WS_CAPTION, WS_CHILD, WS_CLIPCHILDREN, WS_THICKFRAME,
     WS_CLIPSIBLINGS, WS_EX_ACCEPTFILES, WS_EX_APPWINDOW, WS_EX_LAYERED, WS_EX_NOREDIRECTIONBITMAP,
     WS_EX_TOPMOST, WS_EX_TRANSPARENT, WS_EX_WINDOWEDGE, WS_MAXIMIZE, WS_MAXIMIZEBOX, WS_MINIMIZE,
     WS_MINIMIZEBOX, WS_OVERLAPPEDWINDOW, WS_POPUP, WS_SIZEBOX, WS_SYSMENU, WS_VISIBLE,
@@ -123,6 +123,8 @@ bitflags! {
         const MARKER_ACTIVATE = 1 << 21;
 
         const CLIP_CHILDREN = 1 << 22;
+
+        const MARKER_THICKFRAME = 1 << 23;
 
         const EXCLUSIVE_FULLSCREEN_OR_MASK = WindowFlags::ALWAYS_ON_TOP.bits();
     }
@@ -255,7 +257,14 @@ impl WindowFlags {
 
     pub fn to_window_styles(self) -> (WINDOW_STYLE, WINDOW_EX_STYLE) {
         // Required styles to properly support common window functionality like aero snap.
-        let mut style = WS_CAPTION | WS_BORDER | WS_CLIPSIBLINGS | WS_SYSMENU;
+        let decoration = if self.contains(WindowFlags::MARKER_DECORATIONS) {
+            WS_CAPTION | WS_BORDER
+        } else if self.contains(WindowFlags::MARKER_THICKFRAME) {
+            WS_THICKFRAME
+        } else {
+            0
+        };
+        let mut style = decoration | WS_CLIPSIBLINGS | WS_SYSMENU;
         let mut style_ex = WS_EX_WINDOWEDGE | WS_EX_ACCEPTFILES;
 
         if self.contains(WindowFlags::RESIZABLE) {
@@ -285,7 +294,11 @@ impl WindowFlags {
             // Remove decorations window styles for child
             if !self.contains(WindowFlags::MARKER_DECORATIONS) {
                 style &= !(WS_CAPTION | WS_BORDER);
-                style_ex &= !WS_EX_WINDOWEDGE;
+                if self.contains(WindowFlags::MARKER_THICKFRAME) {
+                    style |= WS_THICKFRAME;
+                } else {
+                    style_ex &= !WS_EX_WINDOWEDGE;
+                }
             }
         }
         if self.contains(WindowFlags::POPUP) {
@@ -433,7 +446,12 @@ impl WindowFlags {
             // Frameless style implemented by manually overriding the non-client area in
             // `WM_NCCALCSIZE`.
             if !self.contains(WindowFlags::MARKER_DECORATIONS) {
-                style &= !(WS_CAPTION | WS_SIZEBOX);
+                style &= !WS_CAPTION;
+                if self.contains(WindowFlags::MARKER_THICKFRAME) {
+                    style |= WS_THICKFRAME;
+                } else {
+                    style &= !WS_SIZEBOX;
+                }
             }
 
             util::win_to_err({

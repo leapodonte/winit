@@ -865,6 +865,25 @@ impl Window {
     }
 
     #[inline]
+    pub fn set_thickframe(&self, thickframe: bool) {
+        let window = self.window;
+        let window_state = Arc::clone(&self.window_state);
+
+        self.thread_executor.execute_in_thread(move || {
+            let _ = &window;
+            WindowState::set_window_flags(window_state.lock().unwrap(), window, |f| {
+                f.set(WindowFlags::MARKER_THICKFRAME, thickframe)
+            });
+        });
+    }
+
+    #[inline]
+    pub fn is_thickframe(&self) -> bool {
+        let window_state = self.window_state_lock();
+        window_state.window_flags.contains(WindowFlags::MARKER_THICKFRAME)
+    }
+
+    #[inline]
     pub fn set_window_level(&self, level: WindowLevel) {
         let window = self.window;
         let window_state = Arc::clone(&self.window_state);

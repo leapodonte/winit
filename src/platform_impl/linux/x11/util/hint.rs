@@ -85,6 +85,10 @@ impl MotifHints {
         self.hints.decorations = decorations as u32;
     }
 
+    pub fn set_thickframe(&mut self, thickframe: bool) {
+        // unsupported
+    }
+
     pub fn set_maximizable(&mut self, maximizable: bool) {
         if maximizable {
             self.add_func(mwm::MWM_FUNC_MAXIMIZE);

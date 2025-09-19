@@ -355,6 +355,12 @@ impl Inner {
         true
     }
 
+    pub fn set_thickframe(&self, _thickframe: bool) {}
+
+    pub fn is_thickframe(&self) -> bool {
+        false
+    }
+
     pub fn set_window_level(&self, _level: WindowLevel) {
         warn!("`Window::set_window_level` is ignored on iOS")
     }

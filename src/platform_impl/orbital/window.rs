@@ -331,6 +331,16 @@ impl Window {
     }
 
     #[inline]
+    pub fn set_thickframe(&self, thickframe: bool) {
+        let _ = self.set_flag(ORBITAL_FLAG_BORDERLESS, !thickframe);
+    }
+
+    #[inline]
+    pub fn is_thickframe(&self) -> bool {
+        !self.get_flag(ORBITAL_FLAG_BORDERLESS).unwrap_or(false)
+    }
+
+    #[inline]
     pub fn set_window_level(&self, level: window::WindowLevel) {
         match level {
             window::WindowLevel::AlwaysOnBottom => {

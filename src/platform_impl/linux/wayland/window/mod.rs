@@ -414,6 +414,15 @@ impl Window {
     }
 
     #[inline]
+    pub fn set_thickframe(&self, thickframe: bool) {
+        // unsupported
+    }
+
+    pub fn is_thickframe(&self) -> bool {
+        false
+    }
+
+    #[inline]
     pub fn set_window_level(&self, _level: WindowLevel) {}
 
     #[inline]

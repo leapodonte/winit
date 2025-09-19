@@ -902,6 +902,12 @@ impl Window {
         true
     }
 
+    pub fn set_thickframe(&self, _thickframe: bool) {}
+
+    pub fn is_thickframe(&self) -> bool {
+        false
+    }
+
     pub fn set_window_level(&self, _level: WindowLevel) {}
 
     pub fn set_window_icon(&self, _window_icon: Option<crate::icon::Icon>) {}

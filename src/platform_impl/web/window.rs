@@ -309,8 +309,17 @@ impl Inner {
         // Intentionally a no-op, no canvas decorations
     }
 
+    #[inline]
     pub fn is_decorated(&self) -> bool {
         true
+    }
+
+    #[inline]
+    pub fn set_thickframe(&self, _thickframe: bool) {}
+
+    #[inline]
+    pub fn is_thickframe(&self) -> bool {
+        false
     }
 
     #[inline]

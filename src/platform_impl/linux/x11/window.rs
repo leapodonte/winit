@@ -1053,6 +1053,14 @@ impl UnownedWindow {
     }
 
     #[inline]
+    pub fn set_thickframe(&self, _thickframe: bool) {}
+
+    #[inline]
+    pub fn is_thickframe(&self) -> bool {
+        false
+    }
+
+    #[inline]
     pub fn is_decorated(&self) -> bool {
         self.shared_state_lock().is_decorated
     }

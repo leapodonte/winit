@@ -503,6 +503,15 @@ impl Window {
     }
 
     #[inline]
+    pub fn set_thickframe(&self, thickframe: bool) {
+        x11_or_wayland!(match self; Window(w) => w.set_thickframe(thickframe))
+    }
+
+    pub fn is_thickframe(&self) -> bool {
+        x11_or_wayland!(match self; Window(w) => w.is_thickframe())
+    }
+
+    #[inline]
     pub fn set_window_level(&self, level: WindowLevel) {
         x11_or_wayland!(match self; Window(w) => w.set_window_level(level))
     }

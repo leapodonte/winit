@@ -1330,6 +1330,7 @@ unsafe fn init(
 
     let mut window_flags = WindowFlags::empty();
     window_flags.set(WindowFlags::MARKER_DECORATIONS, attributes.decorations);
+    window_flags.set(WindowFlags::MARKER_THICKFRAME, attributes.thickframe);
     window_flags.set(
         WindowFlags::MARKER_UNDECORATED_SHADOW,
         attributes.platform_specific.decoration_shadow,

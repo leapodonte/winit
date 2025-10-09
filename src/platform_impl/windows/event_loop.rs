@@ -1159,14 +1159,21 @@ unsafe fn public_window_callback_inner(
     let callback = || match msg {
         WM_NCCALCSIZE => {
             let window_flags = userdata.window_state_lock().window_flags;
-            if wparam == 0 || window_flags.contains(WindowFlags::MARKER_DECORATIONS) || window_flags.contains(WindowFlags::MARKER_THICKFRAME) {
+            if wparam == 0 || window_flags.contains(WindowFlags::MARKER_DECORATIONS) {
+                result = ProcResult::DefWindowProc(wparam);
+                return;
+            }
+
+            let is_maximized = util::is_maximized(window);
+
+            if window_flags.contains(WindowFlags::MARKER_THICKFRAME) && !is_maximized {
                 result = ProcResult::DefWindowProc(wparam);
                 return;
             }
 
             let params = unsafe { &mut *(lparam as *mut NCCALCSIZE_PARAMS) };
 
-            if util::is_maximized(window) {
+            if is_maximized {
                 // Limit the window size when maximized to the current monitor.
                 // Otherwise it would include the non-existent decorations.
                 //
@@ -2203,6 +2210,25 @@ unsafe fn public_window_callback_inner(
                     let (width, height): (u32, u32) =
                         window_flags.adjust_size(window, max_size).into();
                     unsafe { (*mmi).ptMaxTrackSize = POINT { x: width as i32, y: height as i32 } };
+                }
+            }
+
+            if window_flags.contains(WindowFlags::MARKER_THICKFRAME) {
+                unsafe {
+                    let hmon = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
+                    let mut monitor_info = MONITORINFO {
+                                    cbSize: mem::size_of::<MONITORINFO>() as _,
+                                    ..mem::zeroed()
+                                };
+                    if GetMonitorInfoW(hmon, &mut monitor_info) != 0 {
+                        let work = monitor_info.rcWork;      // taskbar excluded
+                        let mon  = monitor_info.rcMonitor;
+    
+                        (*mmi).ptMaxPosition.x = (work.left - mon.left) as i32;
+                        (*mmi).ptMaxPosition.y = (work.top  - mon.top)  as i32;
+                        (*mmi).ptMaxSize.x     = (work.right  - work.left)  as i32;
+                        (*mmi).ptMaxSize.y     = (work.bottom - work.top)   as i32;
+                    }
                 }
             }
 
